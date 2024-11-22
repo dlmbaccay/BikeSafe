@@ -107,12 +107,19 @@ const Home = () => {
    */
   const fetchMarkers = async (userLocation: Location.LocationObject, radius: number) => {
     try {
+    const { latitude, longitude } = userLocation.coords;
       const dateNow = new Date();
       const twentyFourHoursAgo = new Date(dateNow.getTime() - 24 * 60 * 60 * 1000);
+
+      const bounds = getBoundingBox(latitude, longitude, radius)
 
       // fetch markers created within the last 24 hours
       const snapshot = await firestore()
         .collection("markers")
+        .where('latitude', '>=', bounds.minLat)
+        .where('latitude', '<=', bounds.maxLat)
+        .where('longitude', '>=', bounds.minLng)
+        .where('longitude', '<=', bounds.maxLng) 
         .where("lastCreatedReportAt", ">=", twentyFourHoursAgo)
         .get();
 
@@ -120,7 +127,7 @@ const Home = () => {
         markerId: doc.id,
         latitude: doc.data().latitude,
         longitude: doc.data().longitude,
-        lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
+        lastCreatedReportAt: doc.data().lastCreatedReportAt,
       }));
 
       // filter markers within the radius using haversine formula
@@ -142,6 +149,36 @@ const Home = () => {
       setLoading(false);
     }
   };
+
+  /** getBoundingBox
+   * - Get bounding box for a given latitude, longitude, and radius
+   * - Returns the minimum and maximum latitude and longitude
+   * - Utilized to filter markers within a certain radius
+   * 
+   * @param latitude 
+   * @param longitude 
+   * @param radius 
+   * @returns 
+   */
+  function getBoundingBox(latitude: number, longitude: number, radius: number) {
+    const earthRadius = 6371;  // Radius of the earth in km
+    const lat = latitude * (Math.PI / 180);
+    const lon = longitude * (Math.PI / 180);
+    const dLat = radius / earthRadius;
+    const dLon = Math.asin(Math.sin(dLat) / Math.cos(lat));
+
+    const minLat = lat - dLat;
+    const maxLat = lat + dLat;
+    const minLng = lon - dLon;
+    const maxLng = lon + dLon;
+
+    return {
+      minLat: minLat * (180 / Math.PI),
+      maxLat: maxLat * (180 / Math.PI),
+      minLng: minLng * (180 / Math.PI),
+      maxLng: maxLng * (180 / Math.PI),
+    };
+  }
 
   /**
    * memoizedHaversine
@@ -359,7 +396,25 @@ const Home = () => {
                   ))}
                 </MapView>
 
-                <TopBar user={user} handleSignOut={handleSignOut} />
+                <TopBar 
+                  user={user} 
+                  // onPlaceSelected={(location) => {
+                  //   if (mapRef) {
+                  //     mapRef.animateToRegion(
+                  //       {
+                  //         latitude: location.lat,
+                  //         longitude: location.lng,
+                  //         latitudeDelta: 0.01,
+                  //         longitudeDelta: 0.01,
+                  //       },
+                  //       1000
+                  //     )
+                  //   }
+
+                  //   fetchMarkers(location.lat, location.lng);
+                  // }} 
+                  handleSignOut={handleSignOut} 
+                />
 
                 <FAB
                   icon="refresh"
