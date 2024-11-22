@@ -344,6 +344,41 @@ const Home = () => {
     setViewReportVisible(true);
   }
 
+  const handlePlaceSelected = async (location: { lat: number; lng: number }) => {
+    try {
+      const selectedLocation = {
+        coords: {
+          latitude: location.lat,
+          longitude: location.lng,
+          altitude: 0,
+          accuracy: 0,
+          altitudeAccuracy: null,
+          heading: 0,
+          speed: 0,
+        },
+        timestamp: Date.now(), // Add a timestamp field to match the LocationObject type
+      };
+
+      // Fetch markers within 5km radius
+      await fetchMarkers(selectedLocation, 5);
+
+      // Recenter the map to the selected location
+      if (mapRef) {
+        mapRef.animateToRegion(
+          {
+            latitude: location.lat,
+            longitude: location.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          1000
+        );
+      }
+    } catch (error) {
+      console.error("Error handling place selection:", error);
+    }
+  };
+
   /**
    * handleSignOut
    * - Sign out the user
@@ -398,21 +433,7 @@ const Home = () => {
 
                 <TopBar 
                   user={user} 
-                  // onPlaceSelected={(location) => {
-                  //   if (mapRef) {
-                  //     mapRef.animateToRegion(
-                  //       {
-                  //         latitude: location.lat,
-                  //         longitude: location.lng,
-                  //         latitudeDelta: 0.01,
-                  //         longitudeDelta: 0.01,
-                  //       },
-                  //       1000
-                  //     )
-                  //   }
-
-                  //   fetchMarkers(location.lat, location.lng);
-                  // }} 
+                  handlePlaceSelected={handlePlaceSelected} 
                   handleSignOut={handleSignOut} 
                 />
 

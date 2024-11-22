@@ -1,3 +1,5 @@
+import 'react-native-get-random-values'; // TODO: Remove this line when the issue is fixed
+
 import { View, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';

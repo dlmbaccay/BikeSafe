@@ -26,6 +26,9 @@ const appConfig = {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY,
         },
+        googlePlaces: {
+          apiKey: process.env.GOOGLE_PLACES_API_KEY,
+        }
       },
       permissions: [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -53,6 +56,8 @@ const appConfig = {
     extra: {
       eas: {
         projectId: "a66f38cd-4ef0-43e4-bc0b-0cd672cd1e5c",
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+        googlePlacesApiKey: process.env.GOOGLE_PLACES_API_KEY,
       },
     },
   },
