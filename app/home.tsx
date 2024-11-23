@@ -253,25 +253,52 @@ const Home = () => {
    * - Set isNotCentered state to false
    * - Utilized to recenter the map when the recenter FAB is pressed
    * 
+   * - Can also be used to recenter location to chosen location of the user (utilized in handlePlaceSelected)
    */
-  const recenterMap = async () => {
-    if (mapRef && location && !isAnimating) {
-      setIsAnimating(true);
-      mapRef.animateToRegion(
-        {
-          ...location,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        },
-        1000  // 1-second animation
-      );
+  const recenterMap = async (customLocation: LocationType | null = null) => {
+    try {
+      const targetLocation = customLocation || location; // Use customLocation if provided, otherwise default to user's location
 
-      setTimeout(() => {
-        setIsNotCentered(false);
-        setIsAnimating(false);  // Reset after animation
-      }, 1000);
+      if (mapRef && targetLocation && !isAnimating) {
+        setIsAnimating(true);
+
+        // Fetch markers within 5km radius
+        await fetchMarkers(
+          {
+            coords: {
+              latitude: targetLocation.latitude,
+              longitude: targetLocation.longitude,
+              altitude: 0,
+              accuracy: 0,
+              altitudeAccuracy: null,
+              heading: 0,
+              speed: 0,
+            },
+            timestamp: Date.now(),
+          },
+          5 // 5km radius
+        );
+
+        // Animate the map to the target location
+        mapRef.animateToRegion(
+          {
+            ...targetLocation,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          },
+          1000 // 1-second animation
+        );
+
+        setTimeout(() => {
+          setIsNotCentered(false);
+          setIsAnimating(false); // Reset after animation
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error recentering map:", error);
     }
   };
+
 
   /**
    * handleAddReport
@@ -344,6 +371,13 @@ const Home = () => {
     setViewReportVisible(true);
   }
 
+  /** handlePlaceSelected
+   * - Handle place selection from the Google Places Autocomplete component
+   * - Fetch markers within a 5km radius of the selected location
+   * - Recenter the map to the selected location
+   * 
+   * @param location - selected location from the Google Places Autocomplete component in topBar.tsx
+   */
   const handlePlaceSelected = async (location: { lat: number; lng: number }) => {
     try {
       const selectedLocation = {
@@ -359,21 +393,16 @@ const Home = () => {
         timestamp: Date.now(), // Add a timestamp field to match the LocationObject type
       };
 
-      // Fetch markers within 5km radius
+      // Fetch markers within 5km radius of the searched location
       await fetchMarkers(selectedLocation, 5);
 
       // Recenter the map to the selected location
-      if (mapRef) {
-        mapRef.animateToRegion(
-          {
-            latitude: location.lat,
-            longitude: location.lng,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          },
-          1000
-        );
-      }
+      recenterMap({
+        latitude: location.lat,
+        longitude: location.lng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
     } catch (error) {
       console.error("Error handling place selection:", error);
     }
@@ -445,7 +474,7 @@ const Home = () => {
 
                 <FAB
                   icon={`${isNotCentered ? 'navigation-variant-outline' : 'navigation-variant'}`}
-                  onPress={recenterMap}
+                  onPress={() => recenterMap(location)}
                   style={{ position: 'absolute', margin: 16, right: 5, bottom: 5, backgroundColor: theme.colors.primaryContainer }}
                 />
 
