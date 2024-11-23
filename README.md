@@ -10,13 +10,14 @@ BikeSafe is a mobile application designed for cyclists to easily report various 
 https://github.com/dlmbaccay/BikeSafe
 
 ### APK (Preview Build):
-- Download through [Google Drive](https://drive.google.com/file/d/1maFwiP_YFwoXN8w_0kiUlwn-DIM9Uw9B/view?usp=sharing)
+- Download through [Google Drive](https://drive.google.com/file/d/1g7cwHTj8XhP-1L3fybpqPi1oeNhgtPw7/view?usp=sharing)
 - Through [GitHub](https://github.com/dlmbaccay/BikeSafe/tree/main/build) or access /build folder in the repository
 
 ### Technologies Used:
 - React Native (Expo)
 - Firebase (Firestore, Authentication, Storage)
 - Google Maps SDK For Android
+- Google Places API
 - React Native Paper
 
 ### Features:
@@ -25,6 +26,7 @@ https://github.com/dlmbaccay/BikeSafe
 - Map View: Visualize reported incidents on a real-time map.
 - Community Sharing: Contribute to a shared knowledge base of road conditions.
 - Profile: Manage your account
+- Search: Search for specific locations on the map
 
 ### How to Use:
 - <b>Create a Report</b>
@@ -33,6 +35,8 @@ https://github.com/dlmbaccay/BikeSafe
   - Click on an existing marker (existing report) to view the report and click on "Add Report" to stack a report on the same location.
 - <b>Edit/Delete a Report</b>
   - To edit or delete a report, click on the existing marker again to view the report and select the "edit/delete" icon beside the report you created (only applicable to own reports).
+- <b>Search for a Location</b>
+  - Click on the search bar on the top of the screen and type in the location you want to search for.
 
 ### Note
 Reported incidents will appear on the map for other users to view and avoid.
