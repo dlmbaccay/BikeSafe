@@ -17,8 +17,6 @@ const TopBar = ({ user, handlePlaceSelected, handleSignOut }: TopBarProps) => {
   const [isCardOpen, setCardOpen] = useState(false);
   const theme = useTheme();
 
-  // TODO: Add a search functionality
-
   return (
     <View className={`absolute top-0 w-[90%]`}>
       <Card className={`h-fit mt-6 mb-4 p-2 rounded-3xl ${isCardOpen ? 'pb-0' : ''}`} style={{ backgroundColor: theme.colors.primaryContainer }}>
@@ -52,6 +50,7 @@ const TopBar = ({ user, handlePlaceSelected, handleSignOut }: TopBarProps) => {
                 textInput: {
                   backgroundColor: theme.colors.primaryContainer,
                   marginTop: 2,
+                  paddingRight: 12,
                   height: 44,
                   fontSize: 16,
                   flex: 1,
