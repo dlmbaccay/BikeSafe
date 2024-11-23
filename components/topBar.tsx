@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
-import { Card, Searchbar, Avatar, useTheme, List, Divider, ActivityIndicator, Chip } from 'react-native-paper';
+import { Card, Searchbar, Avatar, useTheme, List, Divider, ActivityIndicator, Chip, Icon } from 'react-native-paper';
 import { router } from "expo-router";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import Constants  from "expo-constants";
@@ -14,7 +14,6 @@ interface TopBarProps {
 
 const TopBar = ({ user, handlePlaceSelected, handleSignOut }: TopBarProps) => {
   const [showHelper, setShowHelper] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isCardOpen, setCardOpen] = useState(false);
   const theme = useTheme();
 
@@ -25,45 +24,49 @@ const TopBar = ({ user, handlePlaceSelected, handleSignOut }: TopBarProps) => {
       <Card className={`h-fit mt-6 mb-4 p-2 rounded-3xl ${isCardOpen ? 'pb-0' : ''}`} style={{ backgroundColor: theme.colors.primaryContainer }}>
         <Card.Content className="flex w-full items-center justify-between p-0 m-0">
           <View className="flex flex-row">
-            {/* <Searchbar
-              placeholder="Search"
-              className="w-[86%] h-[50px]"
-              inputStyle={{ fontSize: 14, paddingBottom: 6 }}
-              onChangeText={(query) => setSearchQuery(query)}
-              value={searchQuery}
-              style={{ backgroundColor: theme.colors.primaryContainer }}
-            /> */}
+
+            <Text className="pl-1 py-[10px]">
+              <Icon
+                source="magnify"
+                color={theme.colors.primary}
+                size={30}
+              />
+            </Text>
 
             <GooglePlacesAutocomplete
               placeholder="Search"
               fetchDetails={true}
+              listViewDisplayed="auto"
               onPress={(data, details = null) => {
-                if (details?.geometry?.location) {
-                  handlePlaceSelected(details.geometry.location);
-                }
+                if (details?.geometry?.location) handlePlaceSelected(details.geometry.location);
               }}
               query={{
                 key: Constants.expoConfig?.extra?.eas.googlePlacesApiKey,
                 language: 'en'
               }}
-              listViewDisplayed="auto"
-              onFail={(err) => {
-                console.error(err)
-              }}
-              styles={{
-                textInputContainer: {
-                  backgroundColor: theme.colors.primaryContainer,
-                  borderRadius: 10,
-                  marginBottom: 0,
-                  flex: 1,
+              onFail={(err) => console.error(err)}
+              styles = {{
+                poweredContainer: {
+                  display: "none",
                 },
                 textInput: {
-                  backgroundColor: theme.colors.background,
-                  fontSize: 14,
+                  backgroundColor: theme.colors.primaryContainer,
+                  marginTop: 2,
+                  height: 44,
+                  fontSize: 16,
+                  flex: 1,
                 },
                 listView: {
+                  marginTop: 10,
                   backgroundColor: theme.colors.primaryContainer,
-                  zIndex: 10, // Ensure it's above other components
+                  width: "125%",
+                  marginLeft: -30,
+                  zIndex: 1000,
+                },
+                row: {
+                  backgroundColor: theme.colors.primaryContainer,
+                  padding: 10,
+                  height: 44,
                 },
               }}
             />
