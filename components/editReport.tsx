@@ -5,14 +5,21 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
 
+import { NullReport } from "../models/nullReport";
+
 interface EditReportProps {
   editReportVisible: boolean;
   hideEditReport: () => void;
   hideViewReport: () => void;
-  reportData: ReportType | null;
+  // reportData: ReportType | null; // ISSUE, null | when refactored, omit null
+  reportData: ReportType; // REFACTOR to omit null and use Null Object Design Pattern
 }
 
-const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportData }: EditReportProps) => {
+// REFACTOR to omit null and use Null Object Design Pattern
+// within EditReport component parameters, reportData = new NullReportType() 
+const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportData = new NullReport() }: EditReportProps) => {
+  
+// const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportData }: EditReportProps) => {
 
   const [isEditing, setEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(reportData?.title);

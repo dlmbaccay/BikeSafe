@@ -5,15 +5,23 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
 
+import { NullReport } from "../models/nullReport";
+
 interface DeleteReportProps {
   deleteReportVisible: boolean;
   hideDeleteReport: () => void;
   hideViewReport: () => void;
-  reportData : ReportType | null;
+  // reportData : ReportType | null; // ISSUE, null | when refactored, omit null
+  reportData: ReportType; // REFACTOR to omit null and use Null Object Design Pattern
   setMarkers: (markers: (prevMarkers: any[]) => any[]) => void;
 }
 
-const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, reportData, setMarkers }: DeleteReportProps) => {
+// REFACTOR to omit null and use Null Object Design Pattern
+// import { NullReport } from "../types/interfaces";
+// within DeleteReport component parameters, reportData = new NullReport() 
+const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, reportData = new NullReport(), setMarkers }: DeleteReportProps) => {
+
+// const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, reportData, setMarkers }: DeleteReportProps) => {
 
   const [isDeleting, setDeleting] = useState(false);
 
