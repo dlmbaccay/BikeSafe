@@ -20,6 +20,23 @@ interface AddReportProps {
   isNewMarker?: boolean; // flag to differentiate between new report or adding to an existing one
 }
 
+// FOR REFACTORING 1
+class NullImage {
+  get uri() {
+      return null;
+  }
+  async upload(reportId: string) {
+      return null;
+  }
+}
+
+// FOR REFACTORING 2
+class NullUserProfile {
+  firstName = "Unknown";
+  lastName = "User";
+}
+
+
 const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, markerId, latitude, longitude, setMarkers, isNewMarker }: AddReportProps) => {
   
   const [title, setTitle] = useState("");
@@ -75,6 +92,8 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
    * @param reportId - the reportId to use as the filename within Firebase Storage
    * @returns string | null
    */
+
+  // REFACTORING 1 (Null Object): Instead of checking if (!image) return null; repeatedly, create a NullImage object that provides a default behavior.
   const uploadImage = async (reportId: string): Promise<string | null> => {
     if (!image) return null;
 
@@ -87,6 +106,19 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
       return null;
     }
   };
+
+  // REFACTORING 1 (Null Object): Replace the uploadImage function with the NullImage object
+  const uploadImage2 = async (reportId: string): Promise<string | null> => {
+    const img = image ? { uri: image } : new NullImage();
+    try {
+        const imageRef = storage().ref(`reports/${reportId}/image.jpg`);
+        await imageRef.putFile(img.uri);
+        return await imageRef.getDownloadURL();
+    } catch (error) {
+        console.error("Error uploading image: ", error);
+        return null;
+    }
+};
 
   /**
    * handleSubmit
@@ -117,6 +149,9 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
       }
 
       const userProfileDoc = await firestore().collection("users").doc(user.uid).get();
+
+      // REFACTORING 2 (Null Object): Introduce a NullUserProfile object to avoid redundant null checks.
+
       const userProfile = userProfileDoc.data();
 
       if (!userProfile) {
@@ -124,6 +159,10 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
         setSubmitting(false);
         return;
       }
+
+      // REFACTORING 2 (Null Object): 
+      
+      const userProfile2 = userProfileDoc.data() || new NullUserProfile();
 
       const { firstName, lastName } = userProfile;
       const reportRef = firestore().collection("reports").doc();

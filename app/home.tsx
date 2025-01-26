@@ -20,7 +20,12 @@ const Home = () => {
   // location and map states
   const [isLoading, setLoading] = useState(true);
   const [mapRef, setMapRef] = useState<MapView | null>(null);
+
+  // REFACTORING 3: Replace null with a default location object to prevent null checks.
   const [location, setLocation] = useState<LocationType | null>(null);
+  // REFACTORING 3: 
+  // const [location, setLocation] = useState<LocationType>(NullLocation);
+
   const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
   const [isNotCentered, setIsNotCentered] = useState(false);
 
@@ -42,6 +47,9 @@ const Home = () => {
     email: "",
     avatarUrl: "",
   });
+
+  // REFACTORING 4: Instead of initializing user with empty strings, create a NullUser object that provides default values and behaviors.
+  // const [user, setUser] = useState<User>(NullUser);
 
   useEffect(() => { 
     const initializeLocationAndFetchMarkers = async () => {
@@ -160,6 +168,8 @@ const Home = () => {
    * @param radius 
    * @returns 
    */
+
+  // REFACTORING 5: Move the getBoundingBox function to a separate geoUtils.tsx utility file.
   function getBoundingBox(latitude: number, longitude: number, radius: number) {
     const earthRadius = 6371;  // Radius of the earth in km
     const lat = latitude * (Math.PI / 180);
@@ -185,6 +195,7 @@ const Home = () => {
    * - Haversine formula to calculate distance between two points
    * - Memoized to cache results
    */
+  // REFACTORING 6: Move the memoizedHaversine function to a separate geoUtils.tsx utility file.
   const memoizedHaversine = (() => {
     const cache = new Map();
     
@@ -236,6 +247,7 @@ const Home = () => {
    * 
    * @param region - region
    */
+  // REFACTORING 3
   const handleRegionChange = (region: any) => {
     if (location) {
       const isCentered =
