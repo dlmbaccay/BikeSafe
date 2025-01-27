@@ -24,7 +24,7 @@ const Home = () => {
   // location and map states
   const [isLoading, setLoading] = useState(true);
   const [mapRef, setMapRef] = useState<MapView | null>(null);
-  const [location, setLocation] = useState<LocationType | null>(null);
+  const [location, setLocation] = useState<LocationType>(NullLocation);
   const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null);
   const [isNotCentered, setIsNotCentered] = useState(false);
 
@@ -209,7 +209,7 @@ const Home = () => {
           <SpinningWheel />
         ) : (
           <>
-            { location && user && ( 
+            { ( 
               <>
                 <MapView
                   ref={(map) => setMapRef(map)}
