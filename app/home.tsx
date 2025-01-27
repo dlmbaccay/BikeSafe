@@ -4,7 +4,6 @@ import { FAB, useTheme } from 'react-native-paper';
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import MapView, { Marker } from "react-native-maps";
-import * as Location from "expo-location";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import SpinningWheel from "../components/spinningWheel";
@@ -12,6 +11,11 @@ import AddReport from "../components/addReport";
 import ViewReport from "../components/viewReport";
 import TopBar from "../components/topBar";
 import { MarkerType, ReportType, LocationType, User } from "../types/interfaces";
+
+import { LocationHelper } from "../utils/locationHelper";
+import { FirestoreHelper } from "../utils/firestoreHelper";
+
+import { NullLocation, NullUser } from "../models/nullObjects";
 
 const Home = () => {
 
@@ -36,17 +40,12 @@ const Home = () => {
   const [addReportVisible, setAddReportVisible] = useState(false);
   const [viewReportVisible, setViewReportVisible] = useState(false);
 
-  const [user, setUser] = useState<User>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    avatarUrl: "",
-  });
+  const [user, setUser] = useState<User>(NullUser);
 
   useEffect(() => { 
     const initializeLocationAndFetchMarkers = async () => {
       try {
-        const userLocation = await getUserCurrentLocation();
+        const userLocation = await LocationHelper.getUserCurrentLocation();
         setLocation({
           latitude: userLocation.coords.latitude,
           longitude: userLocation.coords.longitude,
@@ -54,7 +53,7 @@ const Home = () => {
           longitudeDelta: 0.01,
         });
 
-        fetchMarkers(userLocation, 5); // fetch markers within 5km radius
+        FirestoreHelper.fetchMarkers(userLocation, 5, setLoading, setMarkers);
       } catch (error) {
         console.error("Error fetching location:", error);
       }
@@ -82,143 +81,11 @@ const Home = () => {
     fetchUserData();
   }, []);
 
-  /**
-   * getUserCurrentLocation
-   * - Get user's current location
-   * 
-   * @returns user's current location
-   */
-  const getUserCurrentLocation = async (): Promise<Location.LocationObject> => {
-    return await Location.getCurrentPositionAsync({ // get user's current location
-      accuracy: Location.Accuracy.High,
-    });
-  };
-
-  /**
-   * fetchMarkers
-   * - Fetch markers within a certain radius  
-   * - Triggered as the user opens the app
-   * - Fetches markers created within the last 24 hours
-   * - Filters markers within the radius using haversine formula
-   * - Stores filtered markers in state
-   * 
-   * @param userLocation - user's current location
-   * @param radius - radius
-   */
-  const fetchMarkers = async (userLocation: Location.LocationObject, radius: number) => {
-    try {
-    const { latitude, longitude } = userLocation.coords;
-      const dateNow = new Date();
-      const twentyFourHoursAgo = new Date(dateNow.getTime() - 24 * 60 * 60 * 1000);
-
-      const bounds = getBoundingBox(latitude, longitude, radius)
-
-      // fetch markers created within the last 24 hours
-      const snapshot = await firestore()
-        .collection("markers")
-        .where('latitude', '>=', bounds.minLat)
-        .where('latitude', '<=', bounds.maxLat)
-        .where('longitude', '>=', bounds.minLng)
-        .where('longitude', '<=', bounds.maxLng) 
-        .where("lastCreatedReportAt", ">=", twentyFourHoursAgo)
-        .get();
-
-      const fetchedMarkers = snapshot.docs.map(doc => ({
-        markerId: doc.id,
-        latitude: doc.data().latitude,
-        longitude: doc.data().longitude,
-        lastCreatedReportAt: doc.data().lastCreatedReportAt,
-      }));
-
-      // filter markers within the radius using haversine formula
-      const filteredMarkers = fetchedMarkers.filter((marker) => {
-        const distance = memoizedHaversine(
-          userLocation.coords.latitude,
-          userLocation.coords.longitude,
-          marker.latitude,
-          marker.longitude
-        );
-        return distance <= radius;
-      });
-
-      // store filtered markers in state
-      setMarkers(filteredMarkers);
-    } catch (error) {
-      console.error("Error fetching markers:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /** getBoundingBox
-   * - Get bounding box for a given latitude, longitude, and radius
-   * - Returns the minimum and maximum latitude and longitude
-   * - Utilized to filter markers within a certain radius
-   * 
-   * @param latitude 
-   * @param longitude 
-   * @param radius 
-   * @returns 
-   */
-  function getBoundingBox(latitude: number, longitude: number, radius: number) {
-    const earthRadius = 6371;  // Radius of the earth in km
-    const lat = latitude * (Math.PI / 180);
-    const lon = longitude * (Math.PI / 180);
-    const dLat = radius / earthRadius;
-    const dLon = Math.asin(Math.sin(dLat) / Math.cos(lat));
-
-    const minLat = lat - dLat;
-    const maxLat = lat + dLat;
-    const minLng = lon - dLon;
-    const maxLng = lon + dLon;
-
-    return {
-      minLat: minLat * (180 / Math.PI),
-      maxLat: maxLat * (180 / Math.PI),
-      minLng: minLng * (180 / Math.PI),
-      maxLng: maxLng * (180 / Math.PI),
-    };
-  }
-
-  /**
-   * memoizedHaversine
-   * - Haversine formula to calculate distance between two points
-   * - Memoized to cache results
-   */
-  const memoizedHaversine = (() => {
-    const cache = new Map();
-    
-    return (lat1: number, lon1: number, lat2: number, lon2: number) => {
-      const key = `${lat1},${lon1}-${lat2},${lon2}`;
-      if (cache.has(key)) return cache.get(key);
-
-      const R = 6371; // Earth's radius in kilometers
-      const dLat = (lat2 - lat1) * (Math.PI / 180);
-      const dLon = (lon2 - lon1) * (Math.PI / 180);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * (Math.PI / 180)) *
-          Math.cos(lat2 * (Math.PI / 180)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-
-      cache.set(key, distance);
-      return distance;
-    };
-  })();
-
-  /**
-   * handleRefetchMarkers
-   * - Refetch markers within a 5km radius
-   * - Calls fetchMarkers with the user's current location and a 5km radius
-   */
   const handleRefetchMarkers = async () => {
     try {
       setLoading(true);
-      const userLocation = await getUserCurrentLocation();
-      fetchMarkers(userLocation, 5);
+      const userLocation = await LocationHelper.getUserCurrentLocation();
+      FirestoreHelper.fetchMarkers(userLocation, 5, setLoading, setMarkers);
     } catch (error) {
       console.error("Error refetching markers:", error);
     } finally {
@@ -226,16 +93,6 @@ const Home = () => {
     }
   };
 
-  /**
-   * handleRegionChange 
-   * - Handle region change when user pans the map
-   * - Triggered by the user panning the map
-   * - Check if the region is centered
-   * - Set isNotCentered state accordingly
-   * - Utilized to control the recenter FAB icon
-   * 
-   * @param region - region
-   */
   const handleRegionChange = (region: any) => {
     if (location) {
       const isCentered =
@@ -246,16 +103,7 @@ const Home = () => {
     }
   };
 
-  /**
-   * recenterMap
-   * - Recenter the map to the user's current location
-   * - Animate the map to the user's current location
-   * - Set isNotCentered state to false
-   * - Utilized to recenter the map when the recenter FAB is pressed
-   * 
-   * - Can also be used to recenter location to chosen location of the user (utilized in handlePlaceSelected)
-   */
-  const recenterMap = async (customLocation: LocationType | null = null) => {
+  const handleRecenterMap = async (customLocation: LocationType | null = NullLocation) => {
     try {
       const targetLocation = customLocation || location; // Use customLocation if provided, otherwise default to user's location
 
@@ -263,7 +111,7 @@ const Home = () => {
         setIsAnimating(true);
 
         // Fetch markers within 5km radius
-        await fetchMarkers(
+        await FirestoreHelper.fetchMarkers(
           {
             coords: {
               latitude: targetLocation.latitude,
@@ -276,7 +124,8 @@ const Home = () => {
             },
             timestamp: Date.now(),
           },
-          5 // 5km radius
+          5, // 5km radius
+          setLoading, setMarkers
         );
 
         // Animate the map to the target location
@@ -299,15 +148,6 @@ const Home = () => {
     }
   };
 
-
-  /**
-   * handleAddReport
-   * - Triggered by the user long-pressing the map
-   * - Sets the selected location state
-   * - Displays the AddReport component
-   * 
-   * @param e - event
-   */
   const handleAddReport = (e: any) => {
     const { coordinate } = e.nativeEvent;
     const selectedLocation = { ...coordinate, latitudeDelta: 0.01, longitudeDelta: 0.01 };
@@ -316,68 +156,11 @@ const Home = () => {
     Animated.timing(slideAnimation, { toValue: 0, duration: 150, useNativeDriver: true }).start();
   }
 
-  /**
-   * fetchMarkerReports
-   * - Called by handleViewMarkerPress to fetch reports for a marker passed as an argument
-   * - Fetches reports for a marker
-   * - Only fetches reports created within the last 24 hours
-   * - Stores fetched reports in state
-   * 
-   * @param markerId - marker ID
-   */
-  const fetchMarkerReports = async (markerId: string) => {
-    try {
-      const dateNow = new Date();
-      const twentyFourHoursAgo = new Date(dateNow.getTime() - 24 * 60 * 60 * 1000);
-
-      // fetch reports created within the last 24 hours for the marker
-      const snapshot = await firestore()
-        .collection("reports")
-        .where("markerId", "==", markerId)
-        .where("createdAt", ">=", twentyFourHoursAgo)
-        .get();
-
-      const fetchedReports = snapshot.docs.map(doc => ({
-        markerId: doc.data().markerId,
-        reportId: doc.id,
-        title: doc.data().title,
-        description: doc.data().description,
-        latitude: doc.data().latitude,
-        longitude: doc.data().longitude,
-        createdAt: doc.data().createdAt,
-        userId: doc.data().userId,
-        firstName: doc.data().firstName,
-        lastName: doc.data().lastName,
-        imageUrl: doc.data().imageUrl,
-      }));
-
-      setReports(fetchedReports);
-    } catch (error) {
-      console.error("Error fetching reports: ", error);
-    }
-  }
-
-  /**
-   * handleViewMarkerPress
-   * - Triggered by the user pressing a marker
-   * - Calls fetchMarkerReports to fetch reports for the marker
-   * - Displays the ViewReport component
-   * - Passes the fetched reports to the ViewReport component
-   *
-   * @param markerId - marker ID
-   */
   const handleViewMarkerPress = async (markerId: string) => {
-    await fetchMarkerReports(markerId);
+    await FirestoreHelper.fetchMarkerReports(markerId, setReports);
     setViewReportVisible(true);
   }
 
-  /** handlePlaceSelected
-   * - Handle place selection from the Google Places Autocomplete component
-   * - Fetch markers within a 5km radius of the selected location
-   * - Recenter the map to the selected location
-   * 
-   * @param location - selected location from the Google Places Autocomplete component in topBar.tsx
-   */
   const handlePlaceSelected = async (location: { lat: number; lng: number }) => {
     try {
       const selectedLocation = {
@@ -394,10 +177,10 @@ const Home = () => {
       };
 
       // Fetch markers within 5km radius of the searched location
-      await fetchMarkers(selectedLocation, 5);
+      await FirestoreHelper.fetchMarkers(selectedLocation, 5, setLoading, setMarkers);
 
       // Recenter the map to the selected location
-      recenterMap({
+      handleRecenterMap({
         latitude: location.lat,
         longitude: location.lng,
         latitudeDelta: 0.01,
@@ -408,14 +191,6 @@ const Home = () => {
     }
   };
 
-  /**
-   * handleSignOut
-   * - Sign out the user
-   * - Triggered by the user pressing the sign out FAB
-   * - Displays a toast message
-   * - Redirects the user to the sign-in page
-   * 
-   */
   const handleSignOut = () => {
     try {
       auth().signOut().then(() => {
@@ -474,7 +249,7 @@ const Home = () => {
 
                 <FAB
                   icon={`${isNotCentered ? 'navigation-variant-outline' : 'navigation-variant'}`}
-                  onPress={() => recenterMap(location)}
+                  onPress={() => handleRecenterMap(location)}
                   style={{ position: 'absolute', margin: 16, right: 5, bottom: 5, backgroundColor: theme.colors.primaryContainer }}
                 />
 

@@ -6,11 +6,12 @@ import AddReport from "./addReport";
 import DeleteReport from "./deleteReport";
 import EditReport from "./editReport";
 import { ReportType } from "../types/interfaces";
+import { NullReport } from "../models/nullObjects";
 
 interface ViewReportProps {
   reportVisible: boolean;
   hideViewReport: () => void;
-  reportsData: any;
+  reportsData: ReportType[];
   setMarkers: (markers: (prevMarkers: any[]) => any[]) => void;
 }
 
@@ -23,7 +24,7 @@ const ViewReport = ({ reportVisible, hideViewReport, reportsData, setMarkers }: 
   const theme = useTheme();
   const [editReportVisible, setEditReportVisible] = useState(false);
   const [deleteReportVisible, setDeleteReportVisible] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<ReportType | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportType>(NullReport);
 
   /**
    * handleAccordionPress

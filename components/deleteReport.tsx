@@ -4,16 +4,17 @@ import { Text, Portal, Button, Dialog } from "react-native-paper";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
+import { NullReport } from "../models/nullObjects";
 
 interface DeleteReportProps {
   deleteReportVisible: boolean;
   hideDeleteReport: () => void;
   hideViewReport: () => void;
-  reportData : ReportType | null;
+  reportData : ReportType;
   setMarkers: (markers: (prevMarkers: any[]) => any[]) => void;
 }
 
-const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, reportData, setMarkers }: DeleteReportProps) => {
+const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, reportData = NullReport, setMarkers }: DeleteReportProps) => {
 
   const [isDeleting, setDeleting] = useState(false);
 
@@ -33,27 +34,27 @@ const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, r
       // Fetch all reports linked to the same markerId
       const reportsInMarker = await firestore()
         .collection("reports")
-        .where("markerId", "==", reportData?.markerId)
+        .where("markerId", "==", reportData.markerId)
         .get();
 
       // Check if only one report is linked to the marker
       if (reportsInMarker.docs.length === 1) {
         // Delete the marker if it's the only report linked to it
-        await firestore().collection("markers").doc(reportData?.markerId).delete();
+        await firestore().collection("markers").doc(reportData.markerId).delete();
 
         // Update the markers state
-        setMarkers((prevMarkers) => prevMarkers.filter((marker) => marker.markerId !== reportData?.markerId));
+        setMarkers((prevMarkers) => prevMarkers.filter((marker) => marker.markerId !== reportData.markerId));
       }
 
       // Delete the report
-      await firestore().collection("reports").doc(reportData?.reportId).delete();
+      await firestore().collection("reports").doc(reportData.reportId).delete();
       
       // Delete the report from the user's reports
-      await firestore().collection("users").doc(reportData?.userId).collection("reports").doc(reportData?.reportId).delete();
+      await firestore().collection("users").doc(reportData.userId).collection("reports").doc(reportData.reportId).delete();
 
       // Delete the associated image, if it exists
-      if (reportData?.imageUrl) {
-        await storage().ref(`reports/${reportData?.reportId}/image.jpg`).delete();
+      if (reportData.imageUrl) {
+        await storage().ref(`reports/${reportData.reportId}/image.jpg`).delete();
       }
 
       setDeleting(false);

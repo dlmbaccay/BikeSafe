@@ -4,19 +4,20 @@ import { Modal, Portal, Text, Button, Divider, Appbar, IconButton, TextInput, us
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
+import { NullReport } from "../models/nullObjects";
 
 interface EditReportProps {
   editReportVisible: boolean;
   hideEditReport: () => void;
   hideViewReport: () => void;
-  reportData: ReportType | null;
+  reportData: ReportType;
 }
 
-const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportData }: EditReportProps) => {
+const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportData = NullReport }: EditReportProps) => {
 
   const [isEditing, setEditing] = useState(false);
-  const [newTitle, setNewTitle] = useState(reportData?.title);
-  const [newDescription, setNewDescription] = useState(reportData?.description);
+  const [newTitle, setNewTitle] = useState(reportData.title);
+  const [newDescription, setNewDescription] = useState(reportData.description);
 
   const [image, setImage] = useState<string | null>(null);
   const [isImageDeleted, setIsImageDeleted] = useState(false); // New state for tracking image deletion
@@ -32,7 +33,7 @@ const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportD
 
   // Set the image state if it exists
   useEffect(() => {
-    if (reportData?.imageUrl) setImage(reportData.imageUrl);
+    if (reportData.imageUrl) setImage(reportData.imageUrl);
   }, []);
 
   /**
@@ -54,15 +55,15 @@ const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportD
     setEditing(true)
 
     try {
-      await firestore().collection("reports").doc(reportData?.reportId).update({
+      await firestore().collection("reports").doc(reportData.reportId).update({
         title: newTitle,
         description: newDescription,
       });
 
       // Handle image deletion if requested
-      if (isImageDeleted && reportData?.imageUrl) {
+      if (isImageDeleted && reportData.imageUrl) {
         await storage().ref(`reports/${reportData.reportId}/image.jpg`).delete();
-        await firestore().collection("reports").doc(reportData?.reportId).update({
+        await firestore().collection("reports").doc(reportData.reportId).update({
           imageUrl: null, // Update the Firestore record to remove the image URL
         });
       }
@@ -93,7 +94,7 @@ const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportD
    */
   const handleCancelEdit = () => {
     setIsImageDeleted(false); // Reset the deletion flag on cancel
-    setImage(reportData?.imageUrl || null); // Restore the original image if it existed
+    setImage(reportData.imageUrl || null); // Restore the original image if it existed
     hideEditReport();
   };
   

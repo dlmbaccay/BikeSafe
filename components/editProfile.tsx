@@ -5,19 +5,16 @@ import { useState, useEffect } from "react";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
+import { User } from "../types/interfaces";
+import { NullUser } from "../models/nullObjects";
 
 interface EditProfileProps {
   editProfileVisible: boolean;
   hideEditProfile: () => void;
-  user : {
-    firstName: string;
-    lastName: string;
-    email: string;
-    avatarUrl: string;
-  };
+  user: User;
 }
 
-const EditProfile = ({ editProfileVisible, hideEditProfile, user }: EditProfileProps) => {
+const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: EditProfileProps) => {
 
   const [isEditing, setEditing] = useState(false);
   const [newFirstName, setNewFirstName] = useState(user.firstName);
