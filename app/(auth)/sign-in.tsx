@@ -7,6 +7,7 @@ import bikeLogoDark from "../../assets/images/bike-logo-dark.png";
 import ForgotPassword from "../../components/forgotPassword";
 import { router } from "expo-router";
 import auth from "@react-native-firebase/auth";
+import { AuthenticationService } from "../../utils/authenticationService";
 
 const SignIn = () => {
 
@@ -22,71 +23,6 @@ const SignIn = () => {
   const theme = useTheme();
   const colorScheme = useColorScheme(); 
   const bikeLogo = colorScheme === "light" ? bikeLogoLight : bikeLogoDark;
-
-  /**
-   * handleSignIn
-   * - Function to handle user sign in
-   * - Signs in user using Firebase Auth
-   * - Checks if email is verified
-   * - Navigates to home screen if successful
-   * 
-   */
-  const handleSignIn = async () => {
-    setSubmitting(true);
-
-    if (form.email === "" || form.password === "") {
-      setSubmitting(true);
-
-      Alert.alert(
-        "Form Error!",
-        "Please fill in the fields before submitting."
-      );
-
-      setSubmitting(false);
-      return;
-    }
-
-    await auth()
-    .signInWithEmailAndPassword(form.email, form.password) // sign in user
-    .then(() => {
-      if (!auth().currentUser?.emailVerified) { // check if email is verified
-        
-        // if not, send email verification
-        Alert.alert(
-          "Verify your email first",
-          "An email verification has been sent to your email address. Please verify your email to continue"
-        )
-
-        setSubmitting(false);
-        return;
-      } else { // else, navigate to home screen
-        setSubmitting(false);
-        ToastAndroid.show("You're logged in!", ToastAndroid.SHORT);
-        router.push("home");
-      }
-    })
-    .catch((error) => {
-      if (error.code === "auth/user-not-found") { // check if user is not found
-        Alert.alert(
-          "User not found",
-          "User not found. Please check your email address and try again",
-        );
-      } else if ( // invalid credentials validation
-        error.code === "auth/invalid-password" ||
-        error.code === "auth/invalid-email" || error.code === "auth/invalid-credential"
-      ) {
-        Alert.alert(
-          "Invalid email or password",
-          "Please check your email and password and try again",
-        );
-      } else {
-        console.log(error);
-      }
-
-      setSubmitting(false);
-      return;
-    })
-  };
 
   return (
     <SafeAreaView className="h-full w-full" style={{ backgroundColor: theme.colors.background }}>
@@ -144,7 +80,7 @@ const SignIn = () => {
 
           <Button
             mode="contained"
-            onPress={handleSignIn}
+            onPress={AuthenticationService.handleSignIn(setSubmitting, form, router)}
             disabled={isSubmitting}
             className={`${isSubmitting ? "opacity-50" : "opacity-100"} w-[90%] h-14 flex justify-center rounded-md mt-6`}
             style={{ backgroundColor: theme.colors.primary }}

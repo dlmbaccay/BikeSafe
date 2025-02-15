@@ -4,6 +4,7 @@ import auth from "@react-native-firebase/auth";
 import { useState } from "react";
 import repairLight from "../assets/images/repair-light.png";
 import repairDark from "../assets/images/repair-dark.png";
+import { AuthenticationService } from "../utils/authenticationService";
 
 interface ForgotPasswordProps {
   forgotVisible: boolean;
@@ -17,42 +18,6 @@ const ForgotPassword = ({ forgotVisible, hideForgotModal }: ForgotPasswordProps)
   const theme = useTheme();
   const colorScheme = useColorScheme();
   const repair = colorScheme === "light" ? repairLight : repairDark;
-
-  /**
-   * handleForgotPassword
-   * - Function to send a password reset email
-   * - Sends a password reset email to the provided email address
-   * - Only sends an email if the email address is valid
-   */
-  const handleForgotPassword = async () => {
-    if (email === "") {
-      Alert.alert("Form Error!", "Please fill in the email address field");
-      return;
-    } else if (!email.includes("@") || !email.includes(".")) {
-      Alert.alert("Error!", "A valid email address is required");
-      return;
-    }
-
-    setSubmitting(true);
-
-    await auth()
-      .sendPasswordResetEmail(email)
-      .then(() => {
-        ToastAndroid.show("Password reset email sent", ToastAndroid.SHORT);
-        hideForgotModal();
-      })
-      .catch((error) => {
-        if (error.code === "auth/user-not-found") {
-          Alert.alert("Error", "Email address not found");
-        } else {
-          Alert.alert("Error", "An error occurred. Please try again later");
-        }
-      })
-      .finally(() => {
-        setSubmitting(false);
-        hideForgotModal();
-      });
-  };
 
   return (
     <Portal>
@@ -85,7 +50,7 @@ const ForgotPassword = ({ forgotVisible, hideForgotModal }: ForgotPasswordProps)
             style={{ backgroundColor: theme.colors.surface }}
           />
 
-          <Button mode="contained" compact={true} onPress={handleForgotPassword} className={`${isSubmitting ? "opacity-50" : "opacity-100"} mt-6 h-14 flex flex-col items-center justify-center px-2 rounded-md w-full`} disabled={isSubmitting} style={{ backgroundColor: theme.colors.primary }}>
+          <Button mode="contained" compact={true} onPress={AuthenticationService.handleForgotPassword(email, setSubmitting, hideForgotModal)} className={`${isSubmitting ? "opacity-50" : "opacity-100"} mt-6 h-14 flex flex-col items-center justify-center px-2 rounded-md w-full`} disabled={isSubmitting} style={{ backgroundColor: theme.colors.primary }}>
               <Text className="text-base" style={{ color: theme.colors.onPrimary, fontWeight: "bold" }}>Reset Password</Text>
           </Button>
         </View>

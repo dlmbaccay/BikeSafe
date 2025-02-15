@@ -83,7 +83,6 @@ export class FirestoreHelper {
   };
   
 
-  // Shuan Changes
   public static async getUserData(uid: string) {
     const userProfileDoc = await firestore().collection("users").doc(uid).get();
     const userProfile = userProfileDoc.data();

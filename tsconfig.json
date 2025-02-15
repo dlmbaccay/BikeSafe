@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "types": ["nativewind/types", "node"],
+    "jsx": "react-native"
   },
   "include": [
     "env.d.ts",

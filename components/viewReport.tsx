@@ -7,6 +7,7 @@ import DeleteReport from "./deleteReport";
 import EditReport from "./editReport";
 import { ReportType } from "../types/interfaces";
 import { NullReport } from "../models/nullObjects";
+import { FormatHelper } from "../utils/formatHelper";
 
 interface ViewReportProps {
   reportVisible: boolean;
@@ -58,7 +59,7 @@ const ViewReport = ({ reportVisible, hideViewReport, reportsData, setMarkers }: 
               : null}&nbsp;|
           </Text>
           <Text className="text-xs italic">
-             &nbsp;{convertTimestamp(report.createdAt.toDate())}
+             &nbsp;{FormatHelper.convertTimestamp(report.createdAt.toDate())}
           </Text>
         </View>
 
@@ -104,28 +105,6 @@ const ViewReport = ({ reportVisible, hideViewReport, reportsData, setMarkers }: 
     </View>
   );
 
-  /**
-   * convertTimestamp
-   * - Function to convert the timestamp to a readable format
-   * 
-   * @param createdAt - timestamp of the report
-   */
-  const convertTimestamp = (createdAt: number) => {
-    const now = Date.now();
-    const diffInSeconds = Math.floor((now - createdAt) / 1000);
-
-    if (diffInSeconds < 60) {
-      return diffInSeconds === 1 ? "1 second ago" : `${diffInSeconds} seconds ago`;
-    }
-
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return diffInMinutes === 1 ? "1 minute ago" : `${diffInMinutes} minutes ago`;
-    }
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    return diffInHours === 1 ? "1 hour ago" : `${diffInHours} hours ago`;
-  };
 
   return (
     <>
@@ -168,7 +147,7 @@ const ViewReport = ({ reportVisible, hideViewReport, reportsData, setMarkers }: 
                     key={index}
                     title={report.title}
                     titleStyle={{ fontSize: 16, fontWeight: "bold" }}
-                    description={convertTimestamp(report.createdAt.toDate())}
+                    description={FormatHelper.convertTimestamp(report.createdAt.toDate())}
                     descriptionStyle={{ fontSize: 12, fontStyle: "italic", marginTop: 2 }}
                     expanded={expandedIndex === index}
                     onPress={() => handleAccordionPress(index)}
