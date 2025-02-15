@@ -120,8 +120,6 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
       // Shuan Change
       const userProfile = await FirestoreHelper.getUserData(user.uid);
 
-
-
       if (!userProfile) {
         Alert.alert("Error", "User profile not found");
         setSubmitting(false);
@@ -148,22 +146,9 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
 
       if (isNewMarker) { // If it's a new marker, create the marker first
         const markerRef = await FirestoreHelper.setMarker(latitude, longitude);
+        reportPayload.markerId = markerRef.id;
+        await FirestoreHelper.setReport(reportPayload);
         
-
-        await reportRef.set({
-          markerId: markerRef.id,
-          reportId: reportRef.id,
-          title: title.trim(),
-          description: description.trim(),
-          latitude,
-          longitude,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          userId: user.uid,
-          firstName,
-          lastName,
-          imageUrl,
-        });
-
         // Update markers state if new marker
         setMarkers?.((prevMarkers) => [
           ...prevMarkers,
@@ -175,19 +160,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
           lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
         });
 
-        await reportRef.set({
-          markerId,
-          reportId: reportRef.id,
-          title: title.trim(),
-          description: description.trim(),
-          latitude,
-          longitude,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          userId: user.uid,
-          firstName,
-          lastName,
-          imageUrl,
-        });
+        await FirestoreHelper.setReport(reportPayload);
       }
 
       await firestore().collection("users").doc(user.uid).update({
