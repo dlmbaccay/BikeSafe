@@ -9,6 +9,7 @@ import { User } from "../types/interfaces";
 import { NullUser } from "../models/nullObjects";
 import { StorageHelper } from "../utils/cloudStorageHelper";
 import { FirestoreHelper } from "../utils/firestoreHelper";
+import { DeviceHandler } from "../utils/deviceHandler";
 
 interface EditProfileProps {
   editProfileVisible: boolean;
@@ -23,25 +24,6 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
   const [newLastName, setNewLastName] = useState(user.lastName);
   const [newAvatarUrl, setNewAvatarUrl] = useState(user.avatarUrl);
   const theme = useTheme();
-
-  /**
-   * handleChangeAvatar
-   * - Function to change the user's avatar
-   * - Uses ImagePicker to select an image from the device's gallery
-   * - Sets the newAvatarUrl state to the selected image
-   * 
-   */
-  const handleChangeAvatar = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setNewAvatarUrl(result.assets[0].uri);
-    }
-  }
 
   /**
    * handleEditProfile
@@ -107,7 +89,7 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
         {/* only avatar, first name, and last name are editable */}
         <View className="w-full flex items-center justify-center mt-2">
           <Avatar.Image size={150} source={{ uri: newAvatarUrl }} />
-          <Button mode="text" icon="camera" className="my-4 rounded-md" onPress={handleChangeAvatar}>
+          <Button mode="text" icon="camera" className="my-4 rounded-md" onPress={DeviceHandler.handleChangeAvatar(setNewAvatarUrl)}>
             Change Avatar
           </Button>
         </View>

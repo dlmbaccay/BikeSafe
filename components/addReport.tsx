@@ -9,6 +9,7 @@ import storage from "@react-native-firebase/storage";
 import CameraModal from "./cameraModal";
 import { FirestoreHelper } from "../utils/firestoreHelper";
 import { StorageHelper } from "../utils/cloudStorageHelper";
+import { DeviceHandler } from "../utils/deviceHandler";
 
 interface AddReportProps {
   reportVisible: boolean;
@@ -43,30 +44,6 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
     setIsFilled(title === "");
   }, [title]);
 
-  /**
-   * pickImage
-   * - Function to pick an image from the device's gallery
-   * - Uses ImagePicker to select an image
-   * - Sets the image state to the selected image
-   * - Different from CameraModal which uses the device's camera
-   * 
-   */
-  const pickImage = async () => {
-    try {
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 1,
-      });
-
-      if (!pickerResult.canceled) {
-        setImage(pickerResult.assets[0].uri);
-      }
-    } catch (error) {
-      console.error("Error selecting image: ", error);
-      ToastAndroid.show("Error selecting image", ToastAndroid.SHORT);
-    }
-  };
 
   /**
    * handleSubmit
@@ -226,7 +203,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
           )}
 
           <Appbar safeAreaInsets={{ bottom }} className="w-full absolute bottom-0" style={{ backgroundColor: theme.colors.background }}>
-            <Appbar.Action icon="image" size={28} onPress={pickImage} />
+            <Appbar.Action icon="image" size={28} onPress={DeviceHandler.pickImage(setImage)} />
             <Appbar.Action icon="camera" size={28} onPress={() => setCameraVisible(true)} />
           </Appbar>
         </Animated.View>
