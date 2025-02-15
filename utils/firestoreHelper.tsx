@@ -106,5 +106,60 @@ export class FirestoreHelper {
     return reportRef;
   }
 
+  
+
   // Shuan Changes
+
+  // Andre Changes
+  public static async updateMarkerReportDate(markerId?: string) {
+    if (!markerId) {
+        console.log("No marker id provided.")
+        return
+    }
+    // update the marker on the last report created
+    await firestore().collection("markers").doc(markerId).update({
+        lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
+    });
+  }
+
+  public static async deleteMarker(markerId: string) {
+    await firestore().collection("markers").doc(markerId).delete();
+  }
+
+  public static async updateReport( reportId: string, updatedData: object) {
+    await firestore().collection("reports").doc(reportId).update(updatedData);
+  }
+
+  public static async deleteReport(userId:string, reportId: string) {
+    await firestore().collection("reports").doc(reportId).delete();
+    await firestore().collection("users").doc(userId).collection("reports").doc(reportId).delete();
+  }
+
+  public static async checkSingleReportMarker(markerId:string) {
+    const reports = await firestore()
+        .collection("reports")
+        .where("markerId", "==", markerId).limit(2)
+        .get();
+
+    if (reports.docs.length != 1) {
+        return false
+    }
+    return true
+  }
+
+  public static async updateReportsUnderUser(userId: string, reportId: string) {
+    await firestore().collection("users").doc(userId).update({
+        reports: firestore.FieldValue.arrayUnion(reportId),
+      });
+  }
+
+  public static async removeImageUrlFromReport( reportId: string) {
+    await firestore().collection("reports").doc(reportId).update({
+        imageUrl: null, // Update the Firestore record to remove the image URL
+      });
+  }
+
+  public static async updateUser( userId: string, updatedData: object) {
+    await firestore().collection("users").doc(userId).update(updatedData);
+  }
 }

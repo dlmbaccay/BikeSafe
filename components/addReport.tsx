@@ -8,6 +8,7 @@ import auth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import CameraModal from "./cameraModal";
 import { FirestoreHelper } from "../utils/firestoreHelper";
+import { StorageHelper } from "../utils/cloudStorageHelper";
 
 interface AddReportProps {
   reportVisible: boolean;
@@ -68,28 +69,6 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
   };
 
   /**
-   * uploadImage
-   * - Function to upload the image to Firebase Storage
-   * - Uploads the image to the reports folder with the reportId as the filename
-   * - Returns the download URL of the uploaded image
-   * 
-   * @param reportId - the reportId to use as the filename within Firebase Storage
-   * @returns string | null
-   */
-  const uploadImage = async (reportId: string): Promise<string | null> => {
-    if (!image) return null;
-
-    try {
-      const imageRef = storage().ref(`reports/${reportId}/image.jpg`);
-      await imageRef.putFile(image);
-      return await imageRef.getDownloadURL();
-    } catch (error) {
-      console.error("Error uploading image: ", error);
-      return null;
-    }
-  };
-
-  /**
    * handleSubmit
    * - Function to handle the submission of the report
    * - Creates a new report document
@@ -128,7 +107,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
 
       const { firstName, lastName } = userProfile;
       const reportRef = firestore().collection("reports").doc();
-      const imageUrl = await uploadImage(reportRef.id);
+      const imageUrl = await StorageHelper.uploadImage(reportRef.id, image);
 
       let reportPayload = {
         markerId,
@@ -156,16 +135,12 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
         ]);
 
       } else { 
-        await firestore().collection("markers").doc(markerId).update({
-          lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
-        });
+        await FirestoreHelper.updateMarkerReportDate(markerId)
 
         await FirestoreHelper.setReport(reportPayload);
       }
 
-      await firestore().collection("users").doc(user.uid).update({
-        reports: firestore.FieldValue.arrayUnion(reportRef.id),
-      });
+      await FirestoreHelper.updateReportsUnderUser(user.uid, reportRef.id)
 
       ToastAndroid.show("Condition reported!", ToastAndroid.LONG);
       hideReport();
