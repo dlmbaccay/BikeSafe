@@ -5,6 +5,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
 import { NullReport } from "../models/nullObjects";
+import { StorageHelper } from "../utils/cloudStorageHelper";
 
 interface DeleteReportProps {
   deleteReportVisible: boolean;
@@ -54,7 +55,7 @@ const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, r
 
       // Delete the associated image, if it exists
       if (reportData.imageUrl) {
-        await storage().ref(`reports/${reportData.reportId}/image.jpg`).delete();
+        await StorageHelper.deleteImage(reportData.reportId);
       }
 
       setDeleting(false);

@@ -5,6 +5,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
 import { NullReport } from "../models/nullObjects";
+import { StorageHelper } from "../utils/cloudStorageHelper";
 
 interface EditReportProps {
   editReportVisible: boolean;
@@ -62,7 +63,7 @@ const EditReport = ({ editReportVisible, hideEditReport, hideViewReport, reportD
 
       // Handle image deletion if requested
       if (isImageDeleted && reportData.imageUrl) {
-        await storage().ref(`reports/${reportData.reportId}/image.jpg`).delete();
+        await StorageHelper.deleteImage(reportData.reportId)
         await firestore().collection("reports").doc(reportData.reportId).update({
           imageUrl: null, // Update the Firestore record to remove the image URL
         });

@@ -7,6 +7,7 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import { User } from "../types/interfaces";
 import { NullUser } from "../models/nullObjects";
+import { StorageHelper } from "../utils/cloudStorageHelper";
 
 interface EditProfileProps {
   editProfileVisible: boolean;
@@ -42,30 +43,6 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
   }
 
   /**
-   * uploadAvatar
-   * - Function to upload the user's new avatar to Firebase Storage
-   * - Uploads the avatar to the avatars collection in Firebase Storage
-   * - Returns the download URL of the uploaded avatar
-   * 
-   * @param userId - the user's ID
-   * @returns the download URL of the uploaded avatar
-   */
-  const uploadAvatar = async (userId: string): Promise<string | null> => {
-    if (!newAvatarUrl) return null;
-
-    try {
-      const avatarRef = storage().ref(`avatars/${userId}/avatar.jpg`);
-      await avatarRef.putFile(newAvatarUrl);
-
-      const downloadURL = await avatarRef.getDownloadURL();
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading avatar: ", error);
-      return null;
-    }
-  }
-
-  /**
    * handleEditProfile
    * - Function to edit the user's profile
    * - Updates the user's first name, last name, and avatar URL
@@ -94,7 +71,7 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
 
       // Check if avatar has changed, if so, upload the new one
       if (newAvatarUrl !== user.avatarUrl) {
-        const uploadedAvatarUrl = await uploadAvatar(userId);
+        const uploadedAvatarUrl = await StorageHelper.uploadAvatar(userId, newAvatarUrl);
         avatarUrl = uploadedAvatarUrl ?? newAvatarUrl; // Ensure avatarUrl is always a string
       }
 

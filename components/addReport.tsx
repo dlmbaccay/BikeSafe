@@ -8,6 +8,7 @@ import auth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import CameraModal from "./cameraModal";
 import { FirestoreHelper } from "../utils/firestoreHelper";
+import { StorageHelper } from "../utils/cloudStorageHelper";
 
 interface AddReportProps {
   reportVisible: boolean;
@@ -76,18 +77,18 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
    * @param reportId - the reportId to use as the filename within Firebase Storage
    * @returns string | null
    */
-  const uploadImage = async (reportId: string): Promise<string | null> => {
-    if (!image) return null;
+//   const uploadImage = async (reportId: string): Promise<string | null> => {
+//     if (!image) return null;
 
-    try {
-      const imageRef = storage().ref(`reports/${reportId}/image.jpg`);
-      await imageRef.putFile(image);
-      return await imageRef.getDownloadURL();
-    } catch (error) {
-      console.error("Error uploading image: ", error);
-      return null;
-    }
-  };
+//     try {
+//       const imageRef = storage().ref(`reports/${reportId}/image.jpg`);
+//       await imageRef.putFile(image);
+//       return await imageRef.getDownloadURL();
+//     } catch (error) {
+//       console.error("Error uploading image: ", error);
+//       return null;
+//     }
+//   };
 
   /**
    * handleSubmit
@@ -128,7 +129,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
 
       const { firstName, lastName } = userProfile;
       const reportRef = firestore().collection("reports").doc();
-      const imageUrl = await uploadImage(reportRef.id);
+      const imageUrl = await StorageHelper.uploadImage(reportRef.id, image);
 
       let reportPayload = {
         markerId,
