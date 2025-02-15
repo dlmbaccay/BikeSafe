@@ -46,63 +46,61 @@ const ViewReport = ({ reportVisible, hideViewReport, reportsData, setMarkers }: 
    * 
    * @param report - report data
    */
-  const renderReportDetails = (report: ReportType) => (
-    <View className="px-4 w-full">
-      <View className="flex flex-row items-center justify-between mb-2">
-        <View className="flex flex-row items-center justify-center w-fit">
-          <Text className="text-xs">
-            {report.firstName && report.lastName
-              ? `${report.firstName} ${report.lastName}`
-              : report.firstName ? report.firstName
-              : report.lastName ? report.lastName
-              : null}&nbsp;|
-          </Text>
-          <Text className="text-xs italic">
-             &nbsp;{convertTimestamp(report.createdAt.toDate())}
-          </Text>
-        </View>
+  const renderReportDetails = (report: ReportType = NullReport) => {
+    // isolate the checking of report name for better readability
+    const userName = `${report.firstName} ${report.lastName}`
 
-        { report.userId === auth().currentUser?.uid && (
-          <View className="flex flex-row items-center justify-center">
-            <IconButton
-              icon="pencil"
-              size={18}
-              style= {{ margin: 0 }}
-              onPress={() => {
-                setSelectedReport(report);
-                setEditReportVisible(true); 
-              }}
-            />
-
-            <IconButton
-              icon="trash-can"
-              size={18}
-              style= {{ margin: 0 }}
-              onPress={() => {
-                setSelectedReport(report);
-                setDeleteReportVisible(true);
-              }}
-            />
+    return (
+      <View className="px-4 w-full">
+        <View className="flex flex-row items-center justify-between mb-2">
+          <View className="flex flex-row items-center justify-center w-fit">
+            <Text className="text-xs">
+              {userName.trim()}&nbsp;|
+            </Text>
+            <Text className="text-xs italic">
+              &nbsp;{convertTimestamp(report.createdAt.toDate())}
+            </Text>
           </View>
-        )}
-      </View>
-
-      {report.description ? (
+          {report.userId === auth().currentUser?.uid && (
+            <View className="flex flex-row items-center justify-center">
+              <IconButton
+                icon="pencil"
+                size={18}
+                style={{ margin: 0 }}
+                onPress={() => {
+                  setSelectedReport(report);
+                  setEditReportVisible(true);
+                }}
+              />
+              <IconButton
+                icon="trash-can"
+                size={18}
+                style={{ margin: 0 }}
+                onPress={() => {
+                  setSelectedReport(report);
+                  setDeleteReportVisible(true);
+                }}
+              />
+            </View>
+          )}
+        </View>
+        
         <Text className="text-s mb-2">{report.description}</Text>
-      ) : null}
-
-      {report.imageUrl ? (
-        <>
-          <TouchableOpacity onPress={() => setFullscreenImage(report.imageUrl)}>
-            <Image
-              source={{ uri: report.imageUrl }}
-              style={{ width: "100%", height: 200, resizeMode: "contain", marginVertical: 10 }}
-            />
-          </TouchableOpacity>
-        </>
-      ) : null}
-    </View>
-  );
+        
+        {report.imageUrl ? (
+          <>
+            <TouchableOpacity onPress={() => setFullscreenImage(report.imageUrl)}>
+              <Image
+                source={{ uri: report.imageUrl }}
+                style={{ width: "100%", height: 200, resizeMode: "contain", marginVertical: 10 }}
+              />
+            </TouchableOpacity>
+          </>
+        ) : null}
+        
+      </View>
+    );
+  };
 
   /**
    * convertTimestamp
