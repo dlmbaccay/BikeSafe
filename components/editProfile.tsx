@@ -8,6 +8,7 @@ import storage from "@react-native-firebase/storage";
 import { User } from "../types/interfaces";
 import { NullUser } from "../models/nullObjects";
 import { StorageHelper } from "../utils/cloudStorageHelper";
+import { FirestoreHelper } from "../utils/firestoreHelper";
 
 interface EditProfileProps {
   editProfileVisible: boolean;
@@ -75,11 +76,11 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
         avatarUrl = uploadedAvatarUrl ?? newAvatarUrl; // Ensure avatarUrl is always a string
       }
 
-      await firestore().collection("users").doc(userId).update({
+      await FirestoreHelper.updateUser(userId, {
         firstName: newFirstName,
         lastName: newLastName,
         avatarUrl: avatarUrl, // Now guaranteed to be a string
-      });
+      })
 
       setEditing(false);
       hideEditProfile();

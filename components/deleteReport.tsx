@@ -6,6 +6,7 @@ import storage from "@react-native-firebase/storage";
 import { ReportType } from "../types/interfaces";
 import { NullReport } from "../models/nullObjects";
 import { StorageHelper } from "../utils/cloudStorageHelper";
+import { FirestoreHelper } from "../utils/firestoreHelper";
 
 interface DeleteReportProps {
   deleteReportVisible: boolean;
@@ -32,26 +33,18 @@ const DeleteReport = ({ deleteReportVisible, hideDeleteReport, hideViewReport, r
     try {
       setDeleting(true);
 
-      // Fetch all reports linked to the same markerId
-      const reportsInMarker = await firestore()
-        .collection("reports")
-        .where("markerId", "==", reportData.markerId)
-        .get();
-
       // Check if only one report is linked to the marker
-      if (reportsInMarker.docs.length === 1) {
+      const isSingleReport = await FirestoreHelper.checkSingleReportMarker(reportData.markerId)
+      if (isSingleReport) {
         // Delete the marker if it's the only report linked to it
-        await firestore().collection("markers").doc(reportData.markerId).delete();
+        await FirestoreHelper.deleteMarker(reportData.markerId)
 
         // Update the markers state
         setMarkers((prevMarkers) => prevMarkers.filter((marker) => marker.markerId !== reportData.markerId));
       }
 
-      // Delete the report
-      await firestore().collection("reports").doc(reportData.reportId).delete();
-      
-      // Delete the report from the user's reports
-      await firestore().collection("users").doc(reportData.userId).collection("reports").doc(reportData.reportId).delete();
+      // Delete the report document and its record from user
+      await FirestoreHelper.deleteReport(reportData.userId, reportData.reportId)
 
       // Delete the associated image, if it exists
       if (reportData.imageUrl) {
