@@ -82,4 +82,30 @@ export class FirestoreHelper {
     }
   };
   
+
+  // Shuan Changes
+  public static async getUserData(uid: string) {
+    const userProfileDoc = await firestore().collection("users").doc(uid).get();
+    const userProfile = userProfileDoc.data();
+    return userProfile;
+  }
+
+  public static async setMarker(latitude: number, longitude: number) {
+    const markerRef = firestore().collection("markers").doc();
+    await markerRef.set({
+      markerId: markerRef.id,
+      latitude,
+      longitude,
+      lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
+    });
+    return markerRef;
+  }
+  
+  public static async setReport(report: any) {
+    const reportRef = firestore().collection("reports").doc();
+    await reportRef.set(report);
+    return reportRef;
+  }
+
+  // Shuan Changes
 }

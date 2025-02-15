@@ -7,6 +7,7 @@ import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import storage from "@react-native-firebase/storage";
 import CameraModal from "./cameraModal";
+import { FirestoreHelper } from "../utils/firestoreHelper";
 
 interface AddReportProps {
   reportVisible: boolean;
@@ -115,9 +116,11 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
         setSubmitting(false);
         return;
       }
+      
+      // Shuan Change
+      const userProfile = await FirestoreHelper.getUserData(user.uid);
 
-      const userProfileDoc = await firestore().collection("users").doc(user.uid).get();
-      const userProfile = userProfileDoc.data();
+
 
       if (!userProfile) {
         Alert.alert("Error", "User profile not found");
@@ -129,15 +132,23 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
       const reportRef = firestore().collection("reports").doc();
       const imageUrl = await uploadImage(reportRef.id);
 
-      if (isNewMarker) { // If it's a new marker, create the marker first
-        const markerRef = firestore().collection("markers").doc();
+      let reportPayload = {
+        markerId,
+        reportId: reportRef.id,
+        title: title.trim(),
+        description: description.trim(),
+        latitude,
+        longitude,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+        userId: user.uid,
+        firstName,
+        lastName,
+        imageUrl,
+      }
 
-        await markerRef.set({
-          markerId: markerRef.id,
-          latitude,
-          longitude,
-          lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
-        });
+      if (isNewMarker) { // If it's a new marker, create the marker first
+        const markerRef = await FirestoreHelper.setMarker(latitude, longitude);
+        
 
         await reportRef.set({
           markerId: markerRef.id,
@@ -159,7 +170,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
           { markerId: markerRef.id, latitude, longitude },
         ]);
 
-      } else { // If adding a report to an existing marker
+      } else { 
         await firestore().collection("markers").doc(markerId).update({
           lastCreatedReportAt: firestore.FieldValue.serverTimestamp(),
         });
