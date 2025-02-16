@@ -58,11 +58,7 @@ export class DeviceHandler {
          * 
     */
     public static async openCamera(setImage: any, hideCamera: any) {
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        });
+        const result = await DeviceHandler.imagePicker();
 
         // If the user cancels the camera, simply close the camera modal
         if (result.canceled) {
