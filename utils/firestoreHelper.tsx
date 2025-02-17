@@ -1,5 +1,5 @@
 import firestore from "@react-native-firebase/firestore";
-import { GeoHelper } from "./geoHelper";
+import { LocationHelper } from "./locationHelper";
 import * as Location from 'expo-location';
 
 
@@ -11,7 +11,7 @@ export class FirestoreHelper {
       const dateNow = new Date();
       const twentyFourHoursAgo = new Date(dateNow.getTime() - 24 * 60 * 60 * 1000);
 
-      const bounds = GeoHelper.getBoundingBox(latitude, longitude, radius)
+      const bounds = LocationHelper.getBoundingBox(latitude, longitude, radius)
 
       // fetch markers created within the last 24 hours
       const snapshot = await firestore()
@@ -32,7 +32,7 @@ export class FirestoreHelper {
 
       // filter markers within the radius using haversine formula
       const filteredMarkers = fetchedMarkers.filter((marker) => {
-        const distance = GeoHelper.memoizedHaversine(
+        const distance = LocationHelper.memoizedHaversine(
           userLocation.coords.latitude,
           userLocation.coords.longitude,
           marker.latitude,

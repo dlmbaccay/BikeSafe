@@ -4,7 +4,7 @@ import auth from "@react-native-firebase/auth";
 import { useState } from "react";
 import repairLight from "../assets/images/repair-light.png";
 import repairDark from "../assets/images/repair-dark.png";
-import { AuthenticationService } from "../utils/authenticationService";
+import { AuthenticationService } from "../utils/authServiceHelper";
 
 interface ForgotPasswordProps {
   forgotVisible: boolean;

@@ -7,7 +7,7 @@ import bikeLogoLight from "../../assets/images/bike-logo-light.png";
 import bikeLogoDark from "../../assets/images/bike-logo-dark.png";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { AuthenticationService } from "../../utils/authenticationService";
+import { AuthenticationService } from "../../utils/authServiceHelper";
 
 const SignUp = () => {
   const [form, setForm] = useState({

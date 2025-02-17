@@ -7,7 +7,7 @@ import bikeLogoDark from "../../assets/images/bike-logo-dark.png";
 import ForgotPassword from "../../components/forgotPassword";
 import { router } from "expo-router";
 import auth from "@react-native-firebase/auth";
-import { AuthenticationService } from "../../utils/authenticationService";
+import { AuthenticationService } from "../../utils/authServiceHelper";
 
 const SignIn = () => {
 
