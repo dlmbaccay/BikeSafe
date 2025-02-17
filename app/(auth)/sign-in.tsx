@@ -80,7 +80,7 @@ const SignIn = () => {
 
           <Button
             mode="contained"
-            onPress={AuthenticationService.handleSignIn(setSubmitting, form, router)}
+            onPress={() => AuthenticationService.handleSignIn(setSubmitting, form, router)}
             disabled={isSubmitting}
             className={`${isSubmitting ? "opacity-50" : "opacity-100"} w-[90%] h-14 flex justify-center rounded-md mt-6`}
             style={{ backgroundColor: theme.colors.primary }}

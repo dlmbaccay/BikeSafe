@@ -120,7 +120,7 @@ const SignUp = () => {
 
           <Button
             mode="contained"
-            onPress={AuthenticationService.handleSignUp(setSubmitting, form, router)}
+            onPress={() => AuthenticationService.handleSignUp(setSubmitting, form, router)}
             disabled={isSubmitting}
             className={`${isSubmitting ? "opacity-50" : "opacity-100"} w-[90%] h-14 flex justify-center rounded-md ${confirmPasswordErrors() !== "" ? 'mt-4' : 'mt-8'}`}
             style={{ backgroundColor: theme.colors.primary }}

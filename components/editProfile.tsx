@@ -89,7 +89,7 @@ const EditProfile = ({ editProfileVisible, hideEditProfile, user = NullUser }: E
         {/* only avatar, first name, and last name are editable */}
         <View className="w-full flex items-center justify-center mt-2">
           <Avatar.Image size={150} source={{ uri: newAvatarUrl }} />
-          <Button mode="text" icon="camera" className="my-4 rounded-md" onPress={DeviceHandler.handleChangeAvatar(setNewAvatarUrl)}>
+          <Button mode="text" icon="camera" className="my-4 rounded-md" onPress={() => {DeviceHandler.handleChangeAvatar(setNewAvatarUrl)}}>
             Change Avatar
           </Button>
         </View>

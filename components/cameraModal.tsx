@@ -21,7 +21,7 @@ const CameraModal = ({ cameraVisible, hideCamera, setImage }: CameraModalProps) 
       </Dialog.Content>
       <Dialog.Actions>
         <Button onPress={hideCamera}>Cancel</Button>
-        <Button onPress={DeviceHandler.openCamera(setImage, hideCamera)}>Open Camera</Button>
+        <Button onPress={() => DeviceHandler.openCamera(setImage, hideCamera)}>Open Camera</Button>
       </Dialog.Actions>
     </Dialog>
   );

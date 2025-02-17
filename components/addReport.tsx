@@ -203,7 +203,7 @@ const AddReport = ({ reportVisible, hideReport, hideViewReport, slideAnimation, 
           )}
 
           <Appbar safeAreaInsets={{ bottom }} className="w-full absolute bottom-0" style={{ backgroundColor: theme.colors.background }}>
-            <Appbar.Action icon="image" size={28} onPress={DeviceHandler.pickImage(setImage)} />
+            <Appbar.Action icon="image" size={28} onPress={() => DeviceHandler.pickImage(setImage)} />
             <Appbar.Action icon="camera" size={28} onPress={() => setCameraVisible(true)} />
           </Appbar>
         </Animated.View>
